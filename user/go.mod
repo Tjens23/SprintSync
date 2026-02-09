@@ -3,19 +3,16 @@ module SprintSync
 go 1.25.6
 
 require (
-	github.com/coreos/go-oidc/v3 v3.17.0
 	github.com/gofiber/fiber/v3 v3.0.0
+	github.com/google/uuid v1.6.0
 	github.com/joho/godotenv v1.5.1
 	github.com/rabbitmq/amqp091-go v1.10.0
-	golang.org/x/oauth2 v0.28.0
 )
 
 require (
 	github.com/andybalholm/brotli v1.2.0 // indirect
-	github.com/go-jose/go-jose/v4 v4.1.3 // indirect
 	github.com/gofiber/schema v1.6.0 // indirect
 	github.com/gofiber/utils/v2 v2.0.0 // indirect
-	github.com/google/uuid v1.6.0 // indirect
 	github.com/klauspost/compress v1.18.3 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect

@@ -7,6 +7,7 @@ import (
 	"github.com/gofiber/fiber/v3/middleware/session"
 
 	"SprintSync/src/platform/authenticator"
+	"SprintSync/src/platform/messaging"
 	"SprintSync/src/web/app/callback"
 	"SprintSync/src/web/app/login"
 	"SprintSync/src/web/app/logout"
@@ -14,7 +15,7 @@ import (
 )
 
 // New creates and configures a new Fiber v3 router
-func New(auth *authenticator.Authenticator) *fiber.App {
+func New(auth *authenticator.Authenticator, rabbitMQ *messaging.RabbitMQ) *fiber.App {
 	// Create Fiber app
 	app := fiber.New()
 
@@ -39,11 +40,11 @@ func New(auth *authenticator.Authenticator) *fiber.App {
 	// Auth routes
 	app.Get("/login", login.Handler(auth, store))
 
-	app.Get("/callback", callback.Handler(auth, store))
+	app.Get("/callback", callback.Handler(auth, store, rabbitMQ))
 
-	app.Get("/user", user.Handler(store))
+	app.Get("/user", user.Handler(store, rabbitMQ))
 
-	app.Get("/logout", logout.Handler(store))
+	app.Get("/logout", logout.Handler(store, rabbitMQ))
 
 	return app
 }

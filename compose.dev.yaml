@@ -1,13 +1,58 @@
+
 services:
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: sprintsync-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   auth:
     build:
-      context: auth/
+      context: ./auth
+      dockerfile: Dockerfile
+    container_name: sprintsync-auth
     ports:
       - "3001:3001"
     env_file:
       - auth/.env
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
     volumes:
       - auth_data:/app/data
+    restart: unless-stopped
+
+  user:
+    build:
+      context: ./user
+      dockerfile: Dockerfile
+    container_name: sprintsync-user
+    ports:
+      - "3002:3002"
+    environment:
+      - PORT=3002
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+      - RABBITMQ_EXCHANGE=sprintsync.events
+      - RABBITMQ_QUEUE=user.service.queue
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    volumes:
+      - user_data:/app/data
+    restart: unless-stopped
 
 volumes:
+  rabbitmq_data:
   auth_data:
+  user_data:

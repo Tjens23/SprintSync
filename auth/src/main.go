@@ -2,8 +2,10 @@ package main
 
 import (
 	"SprintSync/src/platform/authenticator"
+	"SprintSync/src/platform/messaging"
 	"SprintSync/src/platform/router"
 	"log"
+	"os"
 
 	"github.com/joho/godotenv"
 )
@@ -18,7 +20,17 @@ func main() {
 		log.Fatalf("Failed to initialize the authenticator: %v", err)
 	}
 
-	app := router.New(auth)
+	// Initialize RabbitMQ connection
+	rabbitMQ, err := messaging.NewRabbitMQ(
+		os.Getenv("RABBITMQ_URL"),
+		os.Getenv("RABBITMQ_EXCHANGE"),
+	)
+	if err != nil {
+		log.Fatalf("Failed to initialize RabbitMQ: %v", err)
+	}
+	defer rabbitMQ.Close()
+
+	app := router.New(auth, rabbitMQ)
 
 	log.Print("Server listening on http://localhost:3001/")
 	app.Listen(":3001")

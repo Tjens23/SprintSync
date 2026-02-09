@@ -2,13 +2,14 @@ package callback
 
 import (
 	"SprintSync/src/platform/authenticator"
+	"SprintSync/src/platform/messaging"
 
 	"github.com/gofiber/fiber/v3"
 	"github.com/gofiber/fiber/v3/middleware/session"
 )
 
 // Handler for our callback.
-func Handler(auth *authenticator.Authenticator, store *session.Store) fiber.Handler {
+func Handler(auth *authenticator.Authenticator, store *session.Store, rabbitMQ *messaging.RabbitMQ) fiber.Handler {
 	return func(c fiber.Ctx) error {
 		// Get session from store
 		sess, err := store.Get(c)
@@ -42,6 +43,14 @@ func Handler(auth *authenticator.Authenticator, store *session.Store) fiber.Hand
 		if err := sess.Save(); err != nil {
 			return c.Status(fiber.StatusInternalServerError).SendString(err.Error())
 		}
+
+		// Publish user authenticated event to RabbitMQ
+		rabbitMQ.Publish(messaging.EventUserAuthenticated, map[string]interface{}{
+			"user_id": profile["sub"],
+			"email":   profile["email"],
+			"name":    profile["name"],
+			"picture": profile["picture"],
+		})
 
 		// Redirect to logged in page.
 		return c.Redirect().To("/user")
