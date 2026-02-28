@@ -1,3 +1,4 @@
 backend/auth/.env
 backend/user/.env
 diagrams/*.png
+frontend/.github/copilot-instructions.md
